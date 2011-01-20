@@ -1,0 +1,83 @@
+#!/bin/bash
+# keep path in one line, trim long paths to ..reduced/path/
+function reduce_path() {
+	local path="${PWD/#$HOME/~}"
+	# " on " + " in " = 8 #taken from the prompt
+	local maxlen="$(($(tput cols) -${#USER} -${#HOSTNAME} -8 -${1:-0}))"
+	if (( ${#path} > ${maxlen} ))
+	then
+		local prefix=".."
+		local path="${prefix}${path:$((${#path} -${maxlen} +${#prefix}))}"
+	fi
+	echo "${path}"
+}
+
+# the git prompt
+function git_prompt() {
+	local pre="${WHITE}[branch: ${PURPLE}"
+	local suf="${WHITE}]${NORMAL}"
+	local ref="$(git symbolic-ref HEAD 2> /dev/null)"
+	[ -n "$ref" ] || return
+	git status | grep "not updated" &>/dev/null && ref="${ref}${GREEN}!"
+	git status | grep "Untracked" &>/dev/null && ref="${ref}${GREEN}?"
+	echo ${pre}${ref#refs/heads/}${suf}
+}
+# the prompt - simple
+function simple_prompt() {
+	local st="$?" stclr="$fggrn" gpr=""
+	local ref="$(git symbolic-ref HEAD 2>/dev/null)"
+	(($st)) && stclr="$fgred" st="\[$fgwht\][\[$stclr\]$st\[$fgwht\]]" || st=""
+	if [ -n "$ref" ]
+	then
+		git st|grep "not updated" &>/dev/null && ref="$ref\[$fggrn\]!"
+		git st|grep "Untracked" &>/dev/null && ref="$ref\[$fggrn\]?"
+		gpr="\[$fgwht\]:\[$fgylw\]${ref#refs/heads/}"
+	fi
+	PS1="\n$st\[$bfgblu\]\h \[$fggrn\]\W$gpr \[$fgcyn\]>>\[$stclr\]> \[$normal\]"
+	PS2=" \[$fgcyn\]> \[$normal\]"
+	PS3=" \[$bfgcyn\]> \[$normal\]"
+	PS4="[$LINENO]+"
+}
+# the prompt - elegant
+function elegant_prompt() {
+	(( $? )) && local status="$fgred" || local status="$fggrn"
+	local git="$(git_prompt)"
+	[ -n "$git" ] && git=" ${git}"
+	local path="$(reduce_path $(echo $git | sed -r "s:\x1B\[[0-9;]*[mK]::g" | wc -c))"
+	PS1="\n\[${fgylw}\]\u\[${fgwht}\] on \[${mkbold}\]\[${fgblu}\]\h\[${normal}\]\[${fgwht}\] in \[${mkbold}\]\[${fgpur}\]${path}\[${normal}\]${git}\n\[${fgcyn}\]>>\[${status}\]>\[${normal}\] "
+}
+function fancy_prompt() {
+	PS1="\033[1;37m\]┌─[\[\e[36;1m\]\u@\[\e[32;1m\]\H\[\033[1;37m\]] \n\[\033[1;37m\]└─[\[\033[0;36m\]\w\[\033[1;37m\]]> \[\e[0m\]"
+}
+# copy and follow
+function cpf() { 
+	cp "$@" && goto "$_"; 
+}
+# move and follow
+function mvf() { 
+	mv "$@" && goto "$_"; 
+}
+
+
+# extract all in one
+function extract() {
+	if [ -f $1 ] ; then
+		case $1 in
+			*.tar.bz2) tar xvjf $1 ;;
+			*.tar.gz) tar xvzf $1 ;;
+			*.bz2) bunzip2 $1 ;;
+			*.rar) unrar x $1 ;;
+			*.gz) gunzip $1 ;;
+			*.tar) tar xvf $1 ;;
+			*.tbz2) tar xvjf $1 ;;
+			*.tgz) tar xvzf $1 ;;
+			*.zip) unzip $1 ;;
+			*.Z) uncompress $1 ;;
+			*.7z) 7z x $1 ;;
+			*) echo "don't know how to extract '$1'..." ;;
+		esac
+	else
+		echo "'$1' is not a valid file"
+	fi
+}
+

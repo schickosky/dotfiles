@@ -1,0 +1,38 @@
+alias sudo="sudo "
+alias ..="cd .."
+alias ...="cd ../../"
+alias cd..="cd .."
+alias ls="ls --color=auto -h"
+alias ll="ls -alF"
+alias la="ls -A"
+alias l="ls -CF"
+
+alias grep="grep --color=auto -I"
+alias egrep="egrep --color=auto"
+
+## Common
+alias df="df -h -T"
+alias mkdir="mkdir -p -v"
+alias l="ls"
+alias l1="ls -1"
+alias ll="ls -l"
+alias la="ls -A"
+alias l1a="ls -a1"
+alias lla="ls -al"
+alias cp="cp -ir"
+alias mv="mv -i"
+alias rm="rm -I -v"
+alias du="du -h"
+alias lw="wmctrl -l | cut -d\" \" -f5- | sed \"s/^[[:space:]|\(].*$//\" | grep -v ^$"
+alias h="history"
+
+alias pp="sudo powerpill"
+
+alias gcc="colorgcc"
+alias make="colormake"
+alias diff="colordiff"
+alias tail="colortail"
+
+alias alert=alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+alias x="extract"
